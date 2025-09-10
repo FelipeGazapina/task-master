@@ -1,7 +1,7 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 
 export const createInvite = mutation({
   args: {
@@ -21,7 +21,7 @@ export const createInvite = mutation({
       throw new Error("Not authorized");
     }
 
-    const token = randomUUID();
+    const token = uuidv4();
     await ctx.db.insert("teamInvites", {
       token,
       teamId: args.teamId,
