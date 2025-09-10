@@ -26,6 +26,15 @@ export default defineSchema({
     userId: v.id("users"),
     role: v.union(v.literal("invited"), v.literal("member"), v.literal("admin")),
   }).index("by_teamId", ["teamId"]).index("by_userId", ["userId"]),
+  teamInvites: defineTable({
+    token: v.string(),
+    teamId: v.id("teams"),
+    role: v.union(v.literal("member"), v.literal("admin")),
+    createdBy: v.id("users"),
+    createdAt: v.string(),
+    usedBy: v.optional(v.id("users")),
+    usedAt: v.optional(v.string()),
+  }).index("by_token", ["token"]),
   projects: defineTable({
     organizationId: v.id("organizations"),
     name: v.string(),

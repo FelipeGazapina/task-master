@@ -6,8 +6,7 @@ export const listTasks = query({
   args: {
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
+  handler: async (_ctx, _args) => {
     // Placeholder: replace with real table access when the Task model exists
     return [] as Array<unknown>;
   },
@@ -19,7 +18,7 @@ export const createTask = mutation({
     title: v.string(),
     description: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, _args) => {
     // Placeholder: insert into your tasks table when available
     // Return a placeholder ID for now
     return null as unknown as string;
@@ -31,7 +30,7 @@ export const migrateTasks = action({
   args: {
     dryRun: v.optional(v.boolean()),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const dryRun = args.dryRun ?? true;
     // Placeholder: perform migration steps here
     return { migrated: 0, dryRun };
