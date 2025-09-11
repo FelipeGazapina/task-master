@@ -1,5 +1,8 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ReactNode } from "react";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggleCompact } from "@/components/ThemeToggle";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -10,15 +13,23 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-10 bg-light dark:bg-dark p-4 border-b-2 border-slate-200 dark:border-slate-800">
-        <div className="flex justify-between items-center">
-          <h1 className="text-lg font-semibold">Task Master</h1>
-          <button
-            className="bg-slate-200 dark:bg-slate-800 text-dark dark:text-light rounded-md px-2 py-1"
-            onClick={() => void signOut()}
-          >
-            Sign out
-          </button>
+      <header className="sticky top-0 z-50 glass-strong border-b border-border/30">
+        <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-6">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            Task Master
+          </h1>
+          <div className="flex items-center gap-3">
+            <ThemeToggleCompact />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void signOut()}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
       <div className="flex flex-1">

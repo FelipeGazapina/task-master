@@ -1,22 +1,95 @@
 @import "tailwindcss";
 
 @theme {
+  --color-background: 220 20% 97%;
+  --color-foreground: 220 10% 15%;
+  --color-card: rgba(255 255 255 / 0.9);
+  --color-card-foreground: 220 10% 15%;
+  --color-popover: rgba(255 255 255 / 0.95);
+  --color-popover-foreground: 220 10% 15%;
+  --color-primary: 220 70% 50%;
+  --color-primary-foreground: 0 0% 98%;
+  --color-secondary: rgba(237 241 247 / 0.8);
+  --color-secondary-foreground: 220 10% 15%;
+  --color-muted: rgba(241 245 249 / 0.7);
+  --color-muted-foreground: 220 10% 40%;
+  --color-accent: rgba(226 232 240 / 0.8);
+  --color-accent-foreground: 220 10% 15%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 0 0% 98%;
+  --color-border: rgba(203 213 225 / 0.6);
+  --color-input: rgba(255 255 255 / 0.8);
+  --color-ring: 220 70% 50%;
+  --radius: 1rem;
+  
   --color-light: #ffffff;
   --color-dark: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
-  body {
-    color: var(--color-light);
-    background: var(--color-dark);
-    font-family: Arial, Helvetica, sans-serif;
+  @theme {
+    --color-background: 220 20% 8%;
+    --color-foreground: 220 10% 90%;
+    --color-card: rgba(30 41 59 / 0.9);
+    --color-card-foreground: 220 10% 90%;
+    --color-popover: rgba(30 41 59 / 0.95);
+    --color-popover-foreground: 220 10% 90%;
+    --color-primary: 220 70% 60%;
+    --color-primary-foreground: 220 20% 8%;
+    --color-secondary: rgba(51 65 85 / 0.8);
+    --color-secondary-foreground: 220 10% 90%;
+    --color-muted: rgba(45 55 72 / 0.7);
+    --color-muted-foreground: 220 10% 60%;
+    --color-accent: rgba(55 65 81 / 0.8);
+    --color-accent-foreground: 220 10% 90%;
+    --color-destructive: 0 62.8% 30.6%;
+    --color-destructive-foreground: 0 0% 98%;
+    --color-border: rgba(71 85 105 / 0.6);
+    --color-input: rgba(45 55 72 / 0.8);
+    --color-ring: 220 70% 60%;
   }
 }
 
-@media (prefers-color-scheme: light) {
+@layer base {
   body {
-    color: var(--color-dark);
-    background: var(--color-light);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, 
+      hsl(220 20% 97%) 0%, 
+      hsl(220 30% 95%) 50%, 
+      hsl(210 40% 92%) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: hsl(220 10% 15%);
+  }
+
+  .dark body {
+    background: linear-gradient(135deg, 
+      hsl(220 20% 8%) 0%, 
+      hsl(220 25% 10%) 50%, 
+      hsl(210 30% 12%) 100%);
+    color: hsl(220 10% 90%);
+  }
+}
+
+@layer utilities {
+  .glass {
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+  }
+  
+  .glass-strong {
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    background: var(--color-popover);
+    border: 1px solid var(--color-border);
+  }
+  
+  .glass-subtle {
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    background: var(--color-muted);
+    border: 1px solid var(--color-border);
   }
 }

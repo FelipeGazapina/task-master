@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Copy, Link2, Loader2, Mail, Send, UserPlus } from "lucide-react";
 
 export default function InvitePage() {
   const createInvite = useMutation((api as any).teamInvites.createInvite);
@@ -9,6 +14,7 @@ export default function InvitePage() {
   const [email, setEmail] = useState("");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const generateInvite = async () => {
     if (!teamId.trim()) {
@@ -29,6 +35,17 @@ export default function InvitePage() {
     }
   };
 
+  const copyToClipboard = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (error) {
+      console.error("Erro ao copiar:", error);
+    }
+  };
+
   const sendEmailInvite = () => {
     if (!email.trim() || !inviteLink) return;
     
@@ -40,80 +57,122 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Convidar Usuário</h1>
+    <div className="max-w-2xl mx-auto space-y-8">
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 glass-subtle rounded-2xl border border-border/30 mb-4">
+          <UserPlus className="h-8 w-8 text-primary" />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Convidar Usuário
+        </h1>
+        <p className="text-muted-foreground mt-3 text-lg">
+          Crie um link de convite para adicionar novos membros à sua equipe.
+        </p>
+      </div>
       
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">ID do Time</label>
-          <input
-            className="w-full bg-light dark:bg-dark text-dark dark:text-light rounded-md p-3 border-2 border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:outline-none"
-            value={teamId}
-            onChange={(e) => setTeamId(e.target.value)}
-            placeholder="Digite o ID do time"
-          />
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5" />
+            Criar Convite
+          </CardTitle>
+          <CardDescription>
+            Preencha as informações abaixo para gerar um link de convite.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">ID do Time</label>
+            <Input
+              value={teamId}
+              onChange={(e) => setTeamId(e.target.value)}
+              placeholder="Digite o ID do time"
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Função</label>
-          <select
-            className="w-full bg-light dark:bg-dark text-dark dark:text-light rounded-md p-3 border-2 border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:outline-none"
-            value={role}
-            onChange={(e) => setRole(e.target.value as "member" | "admin")}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Função</label>
+            <Select value={role} onValueChange={(value: "member" | "admin") => setRole(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">Membro</SelectItem>
+                <SelectItem value="admin">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            onClick={() => void generateInvite()}
+            disabled={isLoading || !teamId.trim()}
+            className="w-full"
           >
-            <option value="member">Membro</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Gerando...
+              </>
+            ) : (
+              <>
+                <Link2 className="mr-2 h-4 w-4" />
+                Gerar Link de Convite
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
 
-        <button
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-slate-400 text-white rounded-md py-3 px-6 font-medium transition-colors disabled:cursor-not-allowed"
-          onClick={() => void generateInvite()}
-          disabled={isLoading}
-        >
-          {isLoading ? "Gerando..." : "Gerar Link de Convite"}
-        </button>
-
-        {inviteLink && (
-          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <h3 className="font-medium">Link de Convite Gerado</h3>
-            
+      {inviteLink && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Link de Convite Gerado
+            </CardTitle>
+            <CardDescription>
+              Compartilhe este link ou envie por email para convidar novos membros.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <input
-                className="flex-1 bg-light dark:bg-dark text-dark dark:text-light rounded-md p-3 border-2 border-slate-200 dark:border-slate-800"
+              <Input
                 value={inviteLink}
                 readOnly
+                className="flex-1"
               />
-              <button
-                className="bg-slate-200 dark:bg-slate-800 text-dark dark:text-light rounded-md px-4 py-3 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
-                onClick={() => void navigator.clipboard.writeText(inviteLink)}
+              <Button
+                variant="outline"
+                onClick={() => void copyToClipboard()}
               >
-                Copiar
-              </button>
+                <Copy className="h-4 w-4" />
+                {copySuccess ? "Copiado!" : "Copiar"}
+              </Button>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">Enviar por Email</label>
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Enviar por Email</label>
               <div className="flex gap-2">
-                <input
-                  className="flex-1 bg-light dark:bg-dark text-dark dark:text-light rounded-md p-3 border-2 border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:outline-none"
+                <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@exemplo.com"
+                  className="flex-1"
                 />
-                <button
-                  className="bg-green-500 hover:bg-green-600 text-white rounded-md px-4 py-3 font-medium transition-colors disabled:bg-slate-400 disabled:cursor-not-allowed"
+                <Button
                   onClick={sendEmailInvite}
                   disabled={!email.trim()}
+                  variant="default"
                 >
+                  <Send className="mr-2 h-4 w-4" />
                   Enviar
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
