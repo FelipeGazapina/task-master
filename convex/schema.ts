@@ -39,9 +39,11 @@ export default defineSchema({
     organizationId: v.id("organizations"),
     name: v.string(),
     description: v.string(),
+    totalHoursBudgeted: v.number(),
+    hourlyRate: v.optional(v.number()),
     createdBy: v.id("users"),
     createdAt: v.string(),
-  }),
+  }).index("by_organizationId", ["organizationId"]),
   releases: defineTable({
     projectId: v.id("projects"),
     title: v.string(),

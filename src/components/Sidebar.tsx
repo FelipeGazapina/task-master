@@ -1,4 +1,4 @@
-import { Home, Mail } from "lucide-react";
+import { Home, Users, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: "/app", label: "Home", icon: Home },
-  { path: "/app/invite", label: "Convitar Usuário", icon: Mail },
+  { path: "/app/teams", label: "Gerenciar Times", icon: Users },
+  { path: "/app/projects", label: "Projetos", icon: Folder },
 ];
 
 export default function Sidebar({ currentPath, onNavigate }: SidebarProps) {

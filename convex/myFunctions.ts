@@ -81,6 +81,155 @@ export const ensureUserOrganization = mutation({
   },
 });
 
+// Get the user's organization
+export const getUserOrganization = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const organization = await ctx.db
+      .query("organizations")
+      .withIndex("by_createdBy", (q) => q.eq("createdBy", userId))
+      .first();
+
+    return organization;
+  },
+});
+
+// Create a new team
+export const createTeam = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+    if (org.createdBy !== userId) throw new Error("Not authorized");
+
+    const teamId = await ctx.db.insert("teams", {
+      organizationId: args.organizationId,
+      name: args.name,
+      createdBy: userId,
+      createdAt: new Date().toISOString(),
+    });
+
+    await ctx.db.insert("teamMembers", {
+      teamId,
+      userId,
+      role: "admin",
+    });
+
+    return teamId;
+  },
+});
+
+// List teams by organization
+export const listTeamsByOrganization = query({
+  args: { organizationId: v.id("organizations") },
+  handler: async (ctx, args) => {
+    const teams = await ctx.db
+      .query("teams")
+      .withIndex("by_organizationId", (q) => q.eq("organizationId", args.organizationId))
+      .collect();
+    return teams;
+  },
+});
+
+// Create a new project
+export const createProject = mutation({
+  args: {
+    organizationId: v.id("organizations"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    totalHoursBudgeted: v.number(),
+    hourlyRate: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const org = await ctx.db.get(args.organizationId);
+    if (!org) throw new Error("Organization not found");
+    if (org.createdBy !== userId) throw new Error("Not authorized");
+
+    const projectId = await ctx.db.insert("projects", {
+      organizationId: args.organizationId,
+      name: args.name,
+      description: args.description ?? "",
+      totalHoursBudgeted: args.totalHoursBudgeted,
+      hourlyRate: args.hourlyRate,
+      createdBy: userId,
+      createdAt: new Date().toISOString(),
+    });
+
+    return projectId;
+  },
+});
+
+// List projects by organization
+export const listProjectsByOrganization = query({
+  args: { organizationId: v.id("organizations") },
+  handler: async (ctx, args) => {
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_organizationId", (q) => q.eq("organizationId", args.organizationId))
+      .collect();
+    return projects;
+  },
+});
+
+// Get team by ID with members
+export const getTeamById = query({
+  args: { teamId: v.id("teams") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team) return null;
+
+    // Check if user has access to this team
+    const memberRecord = await ctx.db
+      .query("teamMembers")
+      .withIndex("by_teamId", (q) => q.eq("teamId", args.teamId))
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .first();
+
+    // If the user isn't a member, don't throw to avoid crashing the UI;
+    // return null so the client can render a friendly message
+    if (!memberRecord) return null;
+
+    // Get all team members with user details
+    const teamMembers = await ctx.db
+      .query("teamMembers")
+      .withIndex("by_teamId", (q) => q.eq("teamId", args.teamId))
+      .collect();
+
+    const membersWithDetails = await Promise.all(
+      teamMembers.map(async (member) => {
+        const user = await ctx.db.get(member.userId);
+        return {
+          ...member,
+          user: user ? {
+            email: (user as any)?.email || "Email não disponível",
+            name: (user as any)?.name || (user as any)?.email?.split('@')[0] || "Usuário"
+          } : null
+        };
+      })
+    );
+
+    return {
+      ...team,
+      members: membersWithDetails,
+      userRole: memberRecord.role
+    };
+  },
+});
+
 // You can fetch data from and send data to third-party APIs via an action:
 export const myAction = action({
   // Validators for arguments.

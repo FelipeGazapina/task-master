@@ -2,14 +2,41 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Loader2, Plus } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Building2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function HomePage() {
   const { viewer, numbers } =
     useQuery(api.myFunctions.listNumbers, { count: 10 }) ?? {};
   const addNumber = useMutation(api.myFunctions.addNumber);
+  
+  const organization = useQuery(api.myFunctions.getUserOrganization);
+  const ensureOrganization = useMutation(api.myFunctions.ensureUserOrganization);
+  const [isCreatingOrg, setIsCreatingOrg] = useState(false);
+  const [hasTriedAutoCreate, setHasTriedAutoCreate] = useState(false);
 
-  if (viewer === undefined || numbers === undefined) {
+  // Tentar criar organização automaticamente se não existir
+  useEffect(() => {
+    if (organization === null && !hasTriedAutoCreate && viewer !== undefined) {
+      setHasTriedAutoCreate(true);
+      ensureOrganization({}).catch(() => {
+        // Silently fail, user can create manually
+      });
+    }
+  }, [organization, hasTriedAutoCreate, viewer, ensureOrganization]);
+
+  const handleCreateOrganization = async () => {
+    setIsCreatingOrg(true);
+    try {
+      await ensureOrganization({});
+    } catch (error) {
+      console.error("Erro ao criar organização:", error);
+    } finally {
+      setIsCreatingOrg(false);
+    }
+  };
+
+  if (viewer === undefined || numbers === undefined || organization === undefined) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -26,6 +53,42 @@ export default function HomePage() {
           Gerencie suas tarefas e convide membros para sua equipe.
         </p>
       </div>
+
+      {organization === null && hasTriedAutoCreate && (
+        <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <Building2 className="h-6 w-6 text-amber-600 dark:text-amber-400 mt-1 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-100 mb-2">
+                  Organização necessária
+                </h3>
+                <p className="text-amber-800 dark:text-amber-200 text-sm mb-4">
+                  Para começar a usar o Task Master, você precisa criar uma organização. 
+                  Uma organização permite gerenciar equipes e projetos.
+                </p>
+                <Button 
+                  onClick={handleCreateOrganization}
+                  disabled={isCreatingOrg}
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  {isCreatingOrg ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Criando...
+                    </>
+                  ) : (
+                    <>
+                      <Building2 className="mr-2 h-4 w-4" />
+                      Criar Organização
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>

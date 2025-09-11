@@ -10,7 +10,10 @@ export function useNavigation() {
   }, []);
   
   const navigate = (to: string) => {
+    // Update history and notify all listeners (including App's hook instance)
     window.history.pushState({}, "", to);
+    // Manually dispatch a popstate so other subscribers update their state
+    window.dispatchEvent(new PopStateEvent("popstate"));
     setPathname(to);
   };
   
