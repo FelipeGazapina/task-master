@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import InvitePage from "./pages/InvitePage";
 import CreateTeamPage from "./pages/CreateTeamPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 import TeamsPage from "./pages/TeamsPage";
 import TeamDetailsPage from "./pages/TeamDetailsPage";
 import SidebarLayout from "./layouts/SidebarLayout";
@@ -58,6 +59,15 @@ export default function App() {
       pathname.startsWith("/app/projects#")
     ) {
       return <ProjectsPage />;
+    }
+
+    // Dynamic route for project details
+    if (pathname.startsWith("/app/projects/")) {
+      const match = pathname.match(/^\/app\/projects\/([^\/\?#]+)/);
+      const projectId = match?.[1];
+      if (projectId) {
+        return <ProjectDetailsPage projectId={projectId} />;
+      }
     }
 
     switch (pathname) {

@@ -50,7 +50,7 @@ export default defineSchema({
     description: v.string(),
     createdBy: v.id("users"),
     createdAt: v.string(),
-  }),
+  }).index("by_projectId", ["projectId"]),
   boards: defineTable({
     projectId: v.id("projects"),
     name: v.string(),

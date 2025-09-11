@@ -3,15 +3,17 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, FolderPlus, Calendar, Clock, DollarSign } from "lucide-react";
+import { Loader2, FolderPlus, Calendar, Clock, DollarSign, Eye } from "lucide-react";
 import CreateProjectModal from "@/components/CreateProjectModal";
+import { useNavigation } from "@/hooks/useNavigation";
 
 export default function ProjectsPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const organization = useQuery(api.myFunctions.getUserOrganization);
   const projects = organization
-    ? useQuery(api.myFunctions.listProjectsByOrganization, { organizationId: organization._id })
+    ? useQuery((api as any).myFunctions.listProjectsByOrganization, { organizationId: organization._id })
     : undefined;
+  const { navigate } = useNavigation();
 
   if (organization === undefined || projects === undefined) {
     return (
@@ -68,7 +70,7 @@ export default function ProjectsPage() {
                   Criado em {new Date(p.createdAt).toLocaleDateString('pt-BR')}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+              <CardContent className="space-y-4 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground flex items-center gap-1"><Clock className="h-4 w-4" />Horas Orçadas</span>
                   <span className="font-medium">{p.totalHoursBudgeted}</span>
@@ -76,6 +78,11 @@ export default function ProjectsPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground flex items-center gap-1"><DollarSign className="h-4 w-4" />Valor Hora</span>
                   <span className="font-medium">{p.hourlyRate != null ? p.hourlyRate : '-'}</span>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/app/projects/${p._id}`)}>
+                    <Eye className="mr-2 h-3 w-3" /> Ver Detalhes
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -94,4 +101,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-

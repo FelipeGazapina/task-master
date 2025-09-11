@@ -26,7 +26,7 @@ export default function CreateProjectModal({
   const [hourlyRate, setHourlyRate] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
 
-  const createProject = useMutation(api.myFunctions.createProject);
+  const createProject = useMutation((api as any).myFunctions.createProject);
 
   const reset = () => {
     setName("");
@@ -124,4 +124,3 @@ export default function CreateProjectModal({
     </Modal>
   );
 }
-

@@ -182,6 +182,66 @@ export const listProjectsByOrganization = query({
   },
 });
 
+// Get a single project by id (auth: org owner)
+export const getProjectById = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+    // Only the organization owner can access for now
+    const org = await ctx.db.get(project.organizationId);
+    if (!org || org.createdBy !== userId) return null;
+    return project;
+  },
+});
+
+// Create a new release under a project
+export const createRelease = mutation({
+  args: {
+    projectId: v.id("projects"),
+    title: v.string(),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+    const org = await ctx.db.get(project.organizationId);
+    if (!org || org.createdBy !== userId) throw new Error("Not authorized");
+
+    const releaseId = await ctx.db.insert("releases", {
+      projectId: args.projectId,
+      title: args.title,
+      description: args.description ?? "",
+      createdBy: userId,
+      createdAt: new Date().toISOString(),
+    });
+    return releaseId;
+  },
+});
+
+// List releases in a project (auth: org owner)
+export const listReleasesByProject = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+    const org = await ctx.db.get(project.organizationId);
+    if (!org || org.createdBy !== userId) return [];
+
+    const releases = await ctx.db
+      .query("releases")
+      .withIndex("by_projectId", (q) => q.eq("projectId", args.projectId))
+      .collect();
+    return releases;
+  },
+});
+
 // Get team by ID with members
 export const getTeamById = query({
   args: { teamId: v.id("teams") },
